@@ -376,10 +376,18 @@ class FeaturedClassCard extends StatelessWidget {
         ? 'Full'
         : '${schedule.availableSpots} Spots';
 
-    // Fallback image logic
-    String imagePath = 'assets/images/crossfit.png';
-    if (title.toLowerCase().contains('yoga')) {
-      imagePath = 'assets/images/yoga.png';
+    // Dynamic image logic with fallback
+    final imageUrl = gymClass?.imageUrl;
+    final ImageProvider backgroundImage;
+
+    if (imageUrl != null && imageUrl.startsWith('http')) {
+      backgroundImage = NetworkImage(imageUrl);
+    } else {
+      String assetPath = 'assets/images/crossfit.png';
+      if (title.toLowerCase().contains('yoga')) {
+        assetPath = 'assets/images/yoga.png';
+      }
+      backgroundImage = AssetImage(assetPath);
     }
 
     return Container(
@@ -389,7 +397,7 @@ class FeaturedClassCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         image: DecorationImage(
-          image: AssetImage(imagePath),
+          image: backgroundImage,
           fit: BoxFit.cover,
           colorFilter: const ColorFilter.mode(
             Color.fromRGBO(0, 0, 0, 0.4),
