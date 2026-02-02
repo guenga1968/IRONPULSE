@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'theme.dart';
+import 'data_service.dart';
+import 'models.dart';
+import 'auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,214 +14,299 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final DataService _dataService = DataService();
+  final AuthService _authService = AuthService();
+
+  String? _selectedCategoryId;
+  late Future<List<Category>> _categoriesFuture;
+  late Future<List<ClassSchedule>> _featuredFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesFuture = _dataService.fetchCategories();
+    _featuredFuture = _dataService.fetchFeaturedSchedules();
+  }
+
+  void _onCategorySelected(String? categoryId) {
+    setState(() {
+      _selectedCategoryId = categoryId;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = _authService.currentUser;
+    final userName = user?.email?.split('@')[0] ?? 'Athlete';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            setState(() {
+              _categoriesFuture = _dataService.fetchCategories();
+              _featuredFuture = _dataService.fetchFeaturedSchedules();
+            });
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Hola, $userName',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text('👋', style: TextStyle(fontSize: 24)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Ready to crush your goals today?',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.inputBorder),
+                        ),
+                        child: Stack(
                           children: [
-                            const Text(
-                              'Hola, Javier',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                            const Icon(
+                              Icons.notifications_none,
+                              color: Colors.white,
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                height: 10,
+                                width: 10,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Text('👋', style: TextStyle(fontSize: 24)),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Ready to crush your goals today?',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.inputBorder),
                       ),
-                      child: Stack(
-                        children: [
-                          const Icon(
-                            Icons.notifications_none,
-                            color: Colors.white,
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Featured Classes Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Featured Classes',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Row(
+                          children: [
+                            Text(
+                              'See All',
+                              style: TextStyle(color: AppColors.primary),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: AppColors.primary,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Featured Classes Carousel
+                SizedBox(
+                  height: 300,
+                  child: FutureBuilder<List<ClassSchedule>>(
+                    future: _featuredFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Error: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.red),
                           ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              height: 10,
-                              width: 10,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
+                        );
+                      }
+                      final schedules = snapshot.data ?? [];
+                      if (schedules.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No featured classes today',
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        itemCount: schedules.length,
+                        itemBuilder: (context, index) {
+                          final schedule = schedules[index];
+                          return FeaturedClassCard(
+                            schedule: schedule,
+                            onBook: () async {
+                              try {
+                                await _dataService.createBooking(schedule.id);
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('¡Reserva confirmada!'),
+                                  ),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Categories
+                FutureBuilder<List<Category>>(
+                  future: _categoriesFuture,
+                  builder: (context, snapshot) {
+                    final categories = snapshot.data ?? [];
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _onCategorySelected(null),
+                            child: AppFilterChip(
+                              label: 'All Classes',
+                              isActive: _selectedCategoryId == null,
+                            ),
+                          ),
+                          ...categories.map(
+                            (cat) => Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: GestureDetector(
+                                onTap: () => _onCategorySelected(cat.id),
+                                child: AppFilterChip(
+                                  label: cat.name,
+                                  isActive: _selectedCategoryId == cat.id,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-              // Featured Classes Title
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Featured Classes',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                // Upcoming Classes Title
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Upcoming Classes',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Upcoming Classes List
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FutureBuilder<List<ClassSchedule>>(
+                    future: _dataService.fetchUpcomingSchedules(
+                      categoryId: _selectedCategoryId,
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Row(
-                        children: [
-                          Text(
-                            'See All',
-                            style: TextStyle(color: AppColors.primary),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final schedules = snapshot.data ?? [];
+                      if (schedules.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No classes found',
+                            style: TextStyle(color: Colors.white54),
                           ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: AppColors.primary,
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                        );
+                      }
+                      return Column(
+                        children: schedules
+                            .map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: UpcomingClassCard(schedule: s),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
+                  ),
                 ),
-              ),
-
-              // Featured Classes Carousel (Placeholder for now)
-              SizedBox(
-                height: 300,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  children: const [
-                    FeaturedClassCard(
-                      title: 'CrossFit WOD',
-                      type: 'HIGH INTENSITY',
-                      time: '18:00',
-                      duration: '60 min',
-                      spots: '4 Spots',
-                      imagePath: 'assets/images/crossfit.png',
-                    ),
-                    FeaturedClassCard(
-                      title: 'Power Yoga',
-                      type: 'FLEXIBILITY',
-                      time: '07:00',
-                      duration: '45 min',
-                      spots: 'Full',
-                      imagePath: 'assets/images/yoga.png',
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Categories
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    FilterChip(label: 'All Classes', isActive: true),
-                    const SizedBox(width: 12),
-                    FilterChip(label: 'Cardio', isActive: false),
-                    const SizedBox(width: 12),
-                    FilterChip(label: 'Strength', isActive: false),
-                    const SizedBox(width: 12),
-                    FilterChip(label: 'Morning', isActive: false),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Upcoming Classes Title
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Text(
-                      'Upcoming Classes',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Badge(label: Text('3')),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Upcoming Classes List
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    UpcomingClassCard(
-                      title: 'HIIT Advanced',
-                      time: '19:00',
-                      day: 'TODAY',
-                      instructor: 'Coach Sarah',
-                      duration: '45m',
-                      status: 'CONFIRMED',
-                    ),
-                    SizedBox(height: 12),
-                    UpcomingClassCard(
-                      title: 'Spin Cycle',
-                      time: '08:00',
-                      day: 'TMRW',
-                      instructor: 'Coach Mike',
-                      duration: '60m',
-                      status: 'WAITLIST',
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -226,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: AppColors.background,
           border: Border(
-            top: BorderSide(color: AppColors.inputBorder.withOpacity(0.5)),
+            top: BorderSide(color: AppColors.inputBorder.withAlpha(128)),
           ),
         ),
         child: ClipRRect(
@@ -267,25 +356,32 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class FeaturedClassCard extends StatelessWidget {
-  final String title;
-  final String type;
-  final String time;
-  final String duration;
-  final String spots;
-  final String imagePath;
+  final ClassSchedule schedule;
+  final VoidCallback onBook;
 
   const FeaturedClassCard({
     super.key,
-    required this.title,
-    required this.type,
-    required this.time,
-    required this.duration,
-    required this.spots,
-    required this.imagePath,
+    required this.schedule,
+    required this.onBook,
   });
 
   @override
   Widget build(BuildContext context) {
+    final gymClass = schedule.gymClass;
+    final title = gymClass?.name ?? 'Clase';
+    final type = gymClass?.intensity.name.toUpperCase() ?? 'MEDIUM';
+    final time = schedule.formattedTime;
+    final duration = schedule.duration;
+    final spotsText = schedule.isFull
+        ? 'Full'
+        : '${schedule.availableSpots} Spots';
+
+    // Fallback image logic
+    String imagePath = 'assets/images/crossfit.png';
+    if (title.toLowerCase().contains('yoga')) {
+      imagePath = 'assets/images/yoga.png';
+    }
+
     return Container(
       width: 260,
       margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -295,8 +391,8 @@ class FeaturedClassCard extends StatelessWidget {
         image: DecorationImage(
           image: AssetImage(imagePath),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.4),
+          colorFilter: const ColorFilter.mode(
+            Color.fromRGBO(0, 0, 0, 0.4),
             BlendMode.darken,
           ),
         ),
@@ -309,7 +405,7 @@ class FeaturedClassCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: const Color.fromRGBO(0, 0, 0, 0.6),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -317,14 +413,14 @@ class FeaturedClassCard extends StatelessWidget {
                   Container(
                     width: 6,
                     height: 6,
-                    decoration: const BoxDecoration(
-                      color: Colors.green,
+                    decoration: BoxDecoration(
+                      color: schedule.isFull ? Colors.red : Colors.green,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    spots,
+                    spotsText,
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -347,7 +443,7 @@ class FeaturedClassCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withAlpha(77),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -391,25 +487,16 @@ class FeaturedClassCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('¡Clase de $title reservada!'),
-                          backgroundColor: AppColors.primary,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: schedule.isFull ? null : onBook,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: schedule.isFull
+                          ? Colors.grey
+                          : AppColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text('Reservar'),
+                    child: Text(schedule.isFull ? 'Agotado' : 'Reservar'),
                   ),
                 ),
               ],
@@ -421,11 +508,11 @@ class FeaturedClassCard extends StatelessWidget {
   }
 }
 
-class FilterChip extends StatelessWidget {
+class AppFilterChip extends StatelessWidget {
   final String label;
   final bool isActive;
 
-  const FilterChip({super.key, required this.label, required this.isActive});
+  const AppFilterChip({super.key, required this.label, required this.isActive});
 
   @override
   Widget build(BuildContext context) {
@@ -450,25 +537,23 @@ class FilterChip extends StatelessWidget {
 }
 
 class UpcomingClassCard extends StatelessWidget {
-  final String title;
-  final String time;
-  final String day;
-  final String instructor;
-  final String duration;
-  final String status;
+  final ClassSchedule schedule;
 
-  const UpcomingClassCard({
-    super.key,
-    required this.title,
-    required this.time,
-    required this.day,
-    required this.instructor,
-    required this.duration,
-    required this.status,
-  });
+  const UpcomingClassCard({super.key, required this.schedule});
 
   @override
   Widget build(BuildContext context) {
+    final gymClass = schedule.gymClass;
+    final title = gymClass?.name ?? 'Clase';
+    // Check if it's today
+    final isToday = schedule.startTime.day == DateTime.now().day;
+    final dayText = isToday
+        ? 'TODAY'
+        : DateFormat('MMM dd').format(schedule.startTime).toUpperCase();
+    final time = schedule.formattedTime;
+    final instructor = schedule.instructor?.name ?? 'Coach';
+    final duration = schedule.duration;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -481,7 +566,7 @@ class UpcomingClassCard extends StatelessWidget {
           Column(
             children: [
               Text(
-                day,
+                dayText,
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -522,24 +607,16 @@ class UpcomingClassCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: status == 'CONFIRMED'
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.orange.withOpacity(0.1),
+                        color: Colors.green.withAlpha(26),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: status == 'CONFIRMED'
-                              ? Colors.green.withOpacity(0.3)
-                              : Colors.orange.withOpacity(0.3),
-                        ),
+                        border: Border.all(color: Colors.green.withAlpha(77)),
                       ),
-                      child: Text(
-                        status,
+                      child: const Text(
+                        'AVAILABLE',
                         style: TextStyle(
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
-                          color: status == 'CONFIRMED'
-                              ? Colors.green
-                              : Colors.orange,
+                          color: Colors.green,
                         ),
                       ),
                     ),
