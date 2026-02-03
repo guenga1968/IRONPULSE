@@ -125,8 +125,10 @@ class FeaturedClassCard extends StatelessWidget {
     final ImageProvider backgroundImage;
     if (imageUrl != null && imageUrl.startsWith('http')) {
       backgroundImage = NetworkImage(imageUrl);
+    } else if (imageUrl != null && imageUrl.startsWith('assets/')) {
+      backgroundImage = AssetImage(imageUrl);
     } else {
-      backgroundImage = const AssetImage('assets/images/crossfit.png');
+      backgroundImage = const AssetImage('assets/images/gym_hero.png');
     }
 
     return Container(

@@ -6,7 +6,6 @@ import 'auth_service.dart';
 import 'login_screen.dart';
 import 'widgets.dart';
 
-import 'core/responsive/responsive_layout.dart';
 import 'core/responsive/layout_values.dart';
 import 'core/themes/adaptive_typography.dart';
 import 'widgets/layout/fluid_grid.dart';
@@ -154,25 +153,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
 
-                    return ResponsiveLayout(
-                      mobile: SizedBox(
-                        height: 350,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: schedules.length,
-                          itemBuilder: (context, index) => FeaturedClassCard(
-                            schedule: schedules[index],
-                            onBook: () {}, // Simplified for brevity
-                          ),
+                    return SizedBox(
+                      height:
+                          LayoutValues.getLayoutFactor(context) *
+                          220, // Adaptive height
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: schedules.length,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: LayoutValues.getMargin(context) - 10,
                         ),
-                      ),
-                      desktop: FluidGrid(
-                        children: schedules
-                            .map(
-                              (s) =>
-                                  FeaturedClassCard(schedule: s, onBook: () {}),
-                            )
-                            .toList(),
+                        itemBuilder: (context, index) => FeaturedClassCard(
+                          schedule: schedules[index],
+                          onBook: () {},
+                        ),
                       ),
                     );
                   },

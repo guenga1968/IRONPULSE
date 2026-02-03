@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'theme.dart';
 import 'home_screen.dart';
 import 'widgets/adaptive/adaptive_navigation.dart';
+import 'core/responsive/scroll_behavior.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,6 +85,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'IRON PULSE',
       theme: AppTheme.darkTheme,
+      scrollBehavior: AppScrollBehavior(),
       home: const MainNavigationWrapper(),
       debugShowCheckedModeBanner: false,
     );
