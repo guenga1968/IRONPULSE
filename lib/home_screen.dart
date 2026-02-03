@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'theme.dart';
 import 'data_service.dart';
 import 'models.dart';
 import 'auth_service.dart';
+import 'login_screen.dart';
+import 'widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
-    final userName = user?.email?.split('@')[0] ?? 'Athlete';
+    final userMetadata = user?.userMetadata;
+    final userName =
+        userMetadata?['full_name'] ?? user?.email?.split('@')[0] ?? 'Athlete';
+    final screenSize = MediaQuery.of(context).size;
+    final isLargeScreen = screenSize.width > 600;
+
+    // Adaptive font scaling factor
+    final fontScale = isLargeScreen ? 1.2 : 1.0;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -59,93 +68,112 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Hola, $userName',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text('👋', style: TextStyle(fontSize: 24)),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Ready to crush your goals today?',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.inputBorder),
-                        ),
-                        child: Stack(
+                      // Greeting Column - Maximum priority
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.notifications_none,
-                              color: Colors.white,
-                            ),
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: Container(
-                                height: 10,
-                                width: 10,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Hola, $userName 👋',
+                                style: textTheme.displayLarge!.copyWith(
+                                  fontSize: 36, // Imposing size
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -1.2,
+                                  height: 1.0,
                                 ),
+                                maxLines: 1,
                               ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '¿Listo para superar tus límites?',
+                              style: textTheme.bodyMedium!.copyWith(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Logout Button
+                      GestureDetector(
+                        onTap: () async {
+                          await _authService.signOut();
+                          if (mounted) {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 // Featured Classes Title
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isLargeScreen ? 40 : 20,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Featured Classes',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Featured Classes',
+                            style: textTheme.headlineMedium!.copyWith(
+                              fontSize: 16 * fontScale, // Standard Level 2
+                              fontWeight: FontWeight.w800,
+                            ),
+                            maxLines: 1,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       TextButton(
                         onPressed: () {},
                         child: const Row(
                           children: [
                             Text(
                               'See All',
-                              style: TextStyle(color: AppColors.primary),
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13, // Standard secondary level
+                              ),
                             ),
+                            SizedBox(width: 4),
                             Icon(
-                              Icons.chevron_right,
+                              Icons.arrow_forward_rounded,
                               color: AppColors.primary,
                               size: 16,
                             ),
@@ -157,21 +185,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 // Featured Classes Carousel
-                SizedBox(
-                  height: 300,
+                Container(
+                  height:
+                      screenSize.height *
+                      (isLargeScreen ? 0.45 : 0.38), // Increased for better fit
+                  constraints: BoxConstraints(
+                    maxHeight: isLargeScreen ? 420 : 360, // Increased
+                    minHeight: isLargeScreen ? 340 : 280, // Increased
+                  ),
                   child: FutureBuilder<List<ClassSchedule>>(
                     future: _featuredFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(
-                            'Error: ${snapshot.error}',
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        );
                       }
                       final schedules = snapshot.data ?? [];
                       if (schedules.isEmpty) {
@@ -213,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 // Categories
                 FutureBuilder<List<Category>>(
@@ -225,22 +251,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         children: [
-                          GestureDetector(
+                          AppFilterChip(
+                            label: 'All Classes',
+                            isActive: _selectedCategoryId == null,
                             onTap: () => _onCategorySelected(null),
-                            child: AppFilterChip(
-                              label: 'All Classes',
-                              isActive: _selectedCategoryId == null,
-                            ),
                           ),
                           ...categories.map(
                             (cat) => Padding(
                               padding: const EdgeInsets.only(left: 12),
-                              child: GestureDetector(
+                              child: AppFilterChip(
+                                label: cat.name,
+                                isActive: _selectedCategoryId == cat.id,
                                 onTap: () => _onCategorySelected(cat.id),
-                                child: AppFilterChip(
-                                  label: cat.name,
-                                  isActive: _selectedCategoryId == cat.id,
-                                ),
                               ),
                             ),
                           ),
@@ -250,19 +272,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
-                // Upcoming Classes Title
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      Text(
-                        'Upcoming Classes',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              Text(
+                                'Upcoming Classes',
+                                style: textTheme.headlineMedium!.copyWith(
+                                  fontSize: 16 * fontScale,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                                maxLines: 1,
+                              ),
+                              const SizedBox(width: 8),
+                              // Count bubble as seen in screenshot
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(10),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '5', // This should ideally be dynamic
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 10 * fontScale,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -293,41 +344,54 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                       return Column(
                         children: schedules
-                            .map(
-                              (s) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: UpcomingClassCard(schedule: s),
-                              ),
-                            )
+                            .map((s) => UpcomingClassCard(schedule: s))
                             .toList(),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 100), // Extra space for bottom nav
               ],
             ),
           ),
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          border: Border(
-            top: BorderSide(color: AppColors.inputBorder.withAlpha(128)),
-          ),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 24,
+          top: 12,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+        decoration: BoxDecoration(color: AppColors.background),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1D23),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(40),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: AppColors.surface,
+            backgroundColor: Colors.transparent,
             selectedItemColor: AppColors.primary,
-            unselectedItemColor: Colors.white24,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
+            unselectedItemColor: AppColors.textSecondary.withAlpha(100),
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            selectedLabelStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
             type: BottomNavigationBarType.fixed,
             elevation: 0,
             items: const [
@@ -336,336 +400,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.fitness_center),
-                label: 'Workouts',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today_rounded),
-                label: 'Calendar',
+                icon: Icon(Icons.calendar_month_rounded),
+                label: 'Schedule',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
                 label: 'Profile',
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FeaturedClassCard extends StatelessWidget {
-  final ClassSchedule schedule;
-  final VoidCallback onBook;
-
-  const FeaturedClassCard({
-    super.key,
-    required this.schedule,
-    required this.onBook,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final gymClass = schedule.gymClass;
-    final title = gymClass?.name ?? 'Clase';
-    final type = gymClass?.intensity.name.toUpperCase() ?? 'MEDIUM';
-    final time = schedule.formattedTime;
-    final duration = schedule.duration;
-    final spotsText = schedule.isFull
-        ? 'Full'
-        : '${schedule.availableSpots} Spots';
-
-    // Dynamic image logic with fallback
-    final imageUrl = gymClass?.imageUrl;
-    final ImageProvider backgroundImage;
-
-    if (imageUrl != null && imageUrl.startsWith('http')) {
-      backgroundImage = NetworkImage(imageUrl);
-    } else {
-      String assetPath = 'assets/images/crossfit.png';
-      if (title.toLowerCase().contains('yoga')) {
-        assetPath = 'assets/images/yoga.png';
-      }
-      backgroundImage = AssetImage(assetPath);
-    }
-
-    return Container(
-      width: 260,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        image: DecorationImage(
-          image: backgroundImage,
-          fit: BoxFit.cover,
-          colorFilter: const ColorFilter.mode(
-            Color.fromRGBO(0, 0, 0, 0.4),
-            BlendMode.darken,
-          ),
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(0, 0, 0, 0.6),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: schedule.isFull ? Colors.red : Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    spotsText,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(77),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    type,
-                    style: const TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: Colors.white70,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$time • $duration',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: schedule.isFull ? null : onBook,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: schedule.isFull
-                          ? Colors.grey
-                          : AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(schedule.isFull ? 'Agotado' : 'Reservar'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AppFilterChip extends StatelessWidget {
-  final String label;
-  final bool isActive;
-
-  const AppFilterChip({super.key, required this.label, required this.isActive});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: isActive ? AppColors.primary : AppColors.inputBorder,
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : AppColors.textSecondary,
-        ),
-      ),
-    );
-  }
-}
-
-class UpcomingClassCard extends StatelessWidget {
-  final ClassSchedule schedule;
-
-  const UpcomingClassCard({super.key, required this.schedule});
-
-  @override
-  Widget build(BuildContext context) {
-    final gymClass = schedule.gymClass;
-    final title = gymClass?.name ?? 'Clase';
-    // Check if it's today
-    final isToday = schedule.startTime.day == DateTime.now().day;
-    final dayText = isToday
-        ? 'TODAY'
-        : DateFormat('MMM dd').format(schedule.startTime).toUpperCase();
-    final time = schedule.formattedTime;
-    final instructor = schedule.instructor?.name ?? 'Coach';
-    final duration = schedule.duration;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.inputBorder),
-      ),
-      child: Row(
-        children: [
-          Column(
-            children: [
-              Text(
-                dayText,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white38,
-                ),
-              ),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings_rounded),
+                label: 'Settings',
               ),
             ],
           ),
-          const SizedBox(width: 20),
-          Container(width: 1, height: 40, color: Colors.white10),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withAlpha(26),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.withAlpha(77)),
-                      ),
-                      child: const Text(
-                        'AVAILABLE',
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.person_outline,
-                      size: 14,
-                      color: Colors.blue,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      instructor,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.timer_outlined,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      duration,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

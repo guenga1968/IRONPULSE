@@ -32,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _authService.signUpWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        fullName: _nameController.text.trim(),
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
