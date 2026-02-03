@@ -8,7 +8,7 @@ void main() {
   ) async {
     // Note: In a real scenario, we would mock Supabase.
     // For this basic smoke test, we just check if the app starts.
-    await tester.pumpWidget(const IronPulseApp());
+    await tester.pumpWidget(const MyApp());
 
     // Verify that LoginScreen is present
     expect(find.byType(LoginScreen), findsOneWidget);
