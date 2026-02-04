@@ -143,6 +143,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Error: ${snapshot.error}',
+                          style: const TextStyle(color: AppColors.error),
+                        ),
+                      );
+                    }
                     final schedules = snapshot.data ?? [];
                     if (schedules.isEmpty) {
                       return const Center(
@@ -229,6 +237,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SliverToBoxAdapter(
                       child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Text(
+                          'Error loading classes: ${snapshot.error}',
+                          style: const TextStyle(color: AppColors.error),
+                        ),
+                      ),
                     );
                   }
                   final schedules = snapshot.data ?? [];

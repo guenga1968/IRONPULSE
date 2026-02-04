@@ -11,8 +11,8 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'],
-      name: json['name'],
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown Category',
       iconUrl: json['icon_url'],
     );
   }
@@ -41,12 +41,19 @@ class Instructor {
 
   factory Instructor.fromJson(Map<String, dynamic> json) {
     return Instructor(
-      id: json['id'],
-      name: json['name'],
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown Instructor',
       avatarUrl: json['avatar_url'],
       bio: json['bio'],
-      rating: (json['rating'] ?? 5.0).toDouble(),
+      rating: _parseDouble(json['rating'], defaultValue: 5.0),
     );
+  }
+
+  static double _parseDouble(dynamic value, {double defaultValue = 0.0}) {
+    if (value == null) return defaultValue;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? defaultValue;
+    return defaultValue;
   }
 }
 
@@ -73,15 +80,30 @@ class GymClass {
 
   factory GymClass.fromJson(Map<String, dynamic> json) {
     return GymClass(
-      id: json['id'],
-      name: json['name'],
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown Class',
       description: json['description'],
       imageUrl: json['image_url'],
-      categoryId: json['category_id'],
+      categoryId: json['category_id']?.toString() ?? '',
       intensity: _parseIntensity(json['intensity']),
-      durationMinutes: json['duration_minutes'],
-      basePrice: (json['base_price'] ?? 0.0).toDouble(),
+      durationMinutes: _parseInt(json['duration_minutes']),
+      basePrice: _parseDouble(json['base_price']),
     );
+  }
+
+  static double _parseDouble(dynamic value, {double defaultValue = 0.0}) {
+    if (value == null) return defaultValue;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? defaultValue;
+    return defaultValue;
+  }
+
+  static int _parseInt(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
   }
 
   static ClassIntensity _parseIntensity(String? intensity) {
@@ -132,12 +154,16 @@ class ClassSchedule {
 
   factory ClassSchedule.fromJson(Map<String, dynamic> json) {
     return ClassSchedule(
-      id: json['id'],
-      classId: json['class_id'],
+      id: json['id']?.toString() ?? '',
+      classId: json['class_id']?.toString() ?? '',
       instructorId: json['instructor_id'],
-      startTime: DateTime.parse(json['start_time']),
-      endTime: DateTime.parse(json['end_time']),
-      capacity: json['capacity'],
+      startTime: json['start_time'] != null
+          ? DateTime.parse(json['start_time'])
+          : DateTime.now(),
+      endTime: json['end_time'] != null
+          ? DateTime.parse(json['end_time'])
+          : DateTime.now().add(const Duration(hours: 1)),
+      capacity: _parseInt(json['capacity']),
       locationName: json['location_name'],
       isLive: json['is_live'] ?? false,
       gymClass: json['classes'] != null
@@ -146,7 +172,15 @@ class ClassSchedule {
       instructor: json['instructors'] != null
           ? Instructor.fromJson(json['instructors'])
           : null,
-      confirmedBookings: json['confirmed_bookings'] ?? 0,
+      confirmedBookings: _parseInt(json['confirmed_bookings']),
     );
+  }
+
+  static int _parseInt(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
   }
 }

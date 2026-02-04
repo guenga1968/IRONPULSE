@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
 import 'widgets.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
+import 'admin_navigation_wrapper.dart';
 import 'auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,7 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => const AdminNavigationWrapper(),
+          ),
         );
       }
     } on AuthException catch (e) {

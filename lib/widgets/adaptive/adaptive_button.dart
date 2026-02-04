@@ -6,11 +6,14 @@ class AdaptiveButton extends StatelessWidget {
   final Widget child;
   final bool isSecondary;
 
+  final EdgeInsetsGeometry? padding;
+
   const AdaptiveButton({
     super.key,
     required this.onPressed,
     required this.child,
     this.isSecondary = false,
+    this.padding,
   });
 
   @override
@@ -41,7 +44,7 @@ class AdaptiveButton extends StatelessWidget {
         backgroundColor: isSecondary ? AppColors.surface : AppColors.primary,
         foregroundColor: Colors.white,
         minimumSize: Size(0, height),
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: padding ?? EdgeInsets.symmetric(horizontal: horizontalPadding),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
