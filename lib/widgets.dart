@@ -91,6 +91,7 @@ class SocialButton extends StatelessWidget {
   }
 }
 
+// LUXURY FEATURED CLASS CARD - Premium depth card
 class FeaturedClassCard extends StatelessWidget {
   final ClassSchedule schedule;
   final VoidCallback onBook;
@@ -104,12 +105,8 @@ class FeaturedClassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final cardWidth = (screenSize.width * 0.80).clamp(
-      240.0,
-      300.0,
-    ); // Slightly narrower to show next card
+    final cardWidth = (screenSize.width * 0.80).clamp(240.0, 300.0);
     final isVeryNarrow = screenSize.width < 360;
-    final fontScale = screenSize.width > 600 ? 1.2 : 1.0;
 
     final gymClass = schedule.gymClass;
     final title = gymClass?.name ?? 'Clase';
@@ -118,8 +115,8 @@ class FeaturedClassCard extends StatelessWidget {
     final time = schedule.formattedTime;
     final duration = schedule.duration;
     final spotsText = schedule.isFull
-        ? 'Full'
-        : '${schedule.availableSpots} Spots';
+        ? 'FULL'
+        : '${schedule.availableSpots} SPOTS';
 
     final imageUrl = gymClass?.imageUrl;
     final ImageProvider backgroundImage;
@@ -135,164 +132,174 @@ class FeaturedClassCard extends StatelessWidget {
       width: cardWidth,
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
+        color: LuxuryColors.surface,
+        borderRadius: BorderRadius.zero, // Sharp 0px
+        border: const Border(
+          top: BorderSide(color: LuxuryColors.gold, width: 3), // Gold accent
+        ),
+        boxShadow: DepthSystem.depth4, // Premium depth
         image: DecorationImage(
           image: backgroundImage,
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withAlpha(140),
+            Colors.black.withValues(alpha: 0.6),
             BlendMode.darken,
           ),
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.all(
-          isVeryNarrow ? 16 : 20,
-        ), // Slightly less padding on mobile
+        padding: EdgeInsets.all(isVeryNarrow ? 16 : 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(150),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: schedule.isFull
-                              ? AppColors.error
-                              : AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        spotsText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9, // Slightly smaller
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+            // Spots indicator
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: LuxuryColors.pureBlack.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.zero,
+                  border: Border.all(
+                    color: schedule.isFull
+                        ? LuxuryColors.error
+                        : LuxuryColors.success,
+                    width: 1,
                   ),
                 ),
-              ],
+                child: Text(
+                  spotsText,
+                  style: TextStyle(
+                    color: schedule.isFull
+                        ? LuxuryColors.error
+                        : LuxuryColors.success,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
             ),
             const Spacer(),
+
+            // Content
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Intensity badge
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 10,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(50),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.primary.withAlpha(100)),
+                    color: LuxuryColors.brandCyan.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.zero,
+                    border: Border.all(color: LuxuryColors.brandCyan, width: 1),
                   ),
                   child: Text(
                     intensity,
                     style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4), // Reduced from 8
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize:
-                          (isVeryNarrow ? 16 : 18) *
-                          fontScale, // Slightly scaled down
+                      color: LuxuryColors.brandCyan,
+                      fontSize: 9,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
+                      letterSpacing: 1.5,
                     ),
-                    maxLines: 1,
                   ),
                 ),
-                const SizedBox(height: 2), // Reduced from 4
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person, color: Colors.white70, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
+                const SizedBox(height: 8),
+
+                // Title
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: LuxuryColors.textPrimary,
+                    fontSize: isVeryNarrow ? 18 : 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+
+                // Instructor
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      color: LuxuryColors.gold,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
                         instructor,
                         style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
+                          color: LuxuryColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.access_time_filled,
-                        color: Colors.white70,
-                        size: 14,
+                const SizedBox(height: 4),
+
+                // Time
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time,
+                      color: LuxuryColors.gold,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$time • $duration',
+                      style: const TextStyle(
+                        color: LuxuryColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$time • $duration',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8), // Reduced from 12
+                const SizedBox(height: 16),
+
+                // Book button
                 SizedBox(
                   width: double.infinity,
-                  height: isVeryNarrow ? 44 : 48,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: schedule.isFull ? null : onBook,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      backgroundColor: LuxuryColors.pureBlack,
+                      foregroundColor: LuxuryColors.gold,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                        side: BorderSide(color: LuxuryColors.gold, width: 2),
                       ),
+                      elevation: 0,
                     ),
                     child: Text(
-                      'Reservar',
+                      'RESERVAR',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: isVeryNarrow ? 14 : 16,
-                        letterSpacing: 0.5,
+                        letterSpacing: 1.5,
                       ),
                     ),
                   ),
@@ -306,6 +313,7 @@ class FeaturedClassCard extends StatelessWidget {
   }
 }
 
+// LUXURY FILTER CHIP - Sharp gold-bordered chip
 class AppFilterChip extends StatelessWidget {
   final String label;
   final bool isActive;
@@ -323,23 +331,24 @@ class AppFilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 6,
-        ), // Ultra compact
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(100),
-          border: isActive
-              ? null
-              : Border.all(color: Colors.white.withAlpha(20)),
+          color: isActive ? LuxuryColors.pureBlack : LuxuryColors.surface,
+          borderRadius: BorderRadius.zero, // Sharp 0px
+          border: Border.all(
+            color: isActive
+                ? LuxuryColors.gold
+                : LuxuryColors.textTertiary.withValues(alpha: 0.3),
+            width: isActive ? 2 : 1,
+          ),
         ),
         child: Text(
-          label,
+          label.toUpperCase(),
           style: TextStyle(
-            color: isActive ? Colors.white : AppColors.textSecondary,
-            fontWeight: FontWeight.w800,
+            color: isActive ? LuxuryColors.gold : LuxuryColors.textSecondary,
+            fontWeight: FontWeight.w700,
             fontSize: 11,
+            letterSpacing: 1,
           ),
         ),
       ),
@@ -347,6 +356,7 @@ class AppFilterChip extends StatelessWidget {
   }
 }
 
+// LUXURY UPCOMING CLASS CARD - Depth card with cyan accent
 class UpcomingClassCard extends StatelessWidget {
   final ClassSchedule schedule;
 
@@ -356,7 +366,6 @@ class UpcomingClassCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isVeryNarrow = screenSize.width < 360;
-    final fontScale = screenSize.width > 600 ? 1.2 : 0.7;
 
     final gymClass = schedule.gymClass;
     final title = gymClass?.name ?? 'Clase';
@@ -368,39 +377,46 @@ class UpcomingClassCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.symmetric(
-        horizontal: isVeryNarrow ? 10 : 14,
-        vertical: 10,
+        horizontal: isVeryNarrow ? 12 : 16,
+        vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        color: LuxuryColors.surface,
+        borderRadius: BorderRadius.zero, // Sharp 0px
+        border: Border.all(
+          color: LuxuryColors.brandCyan.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: DepthSystem.depth2, // Subtle depth
       ),
       child: Row(
         children: [
           // Left: Time & Day
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.black.withAlpha(40),
-              borderRadius: BorderRadius.circular(12),
+              color: LuxuryColors.pureBlack,
+              borderRadius: BorderRadius.zero,
+              border: Border.all(color: LuxuryColors.gold, width: 1),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   isToday ? 'TODAY' : 'TMRW',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                  style: const TextStyle(
+                    color: LuxuryColors.gold,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   time,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                    color: LuxuryColors.textPrimary,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -408,6 +424,7 @@ class UpcomingClassCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
+
           // Center: Details
           Expanded(
             child: Column(
@@ -416,46 +433,49 @@ class UpcomingClassCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15 * fontScale,
+                  style: const TextStyle(
+                    color: LuxuryColors.textPrimary,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: -0.3,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     const Icon(
-                      Icons.person,
-                      size: 12,
-                      color: AppColors.textSecondary,
+                      Icons.person_outline,
+                      size: 13,
+                      color: LuxuryColors.textSecondary,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         instructor,
                         style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
+                          color: LuxuryColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     const Icon(
-                      Icons.access_time_filled,
-                      size: 12,
-                      color: AppColors.primary,
+                      Icons.access_time,
+                      size: 13,
+                      color: LuxuryColors.brandCyan,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Text(
                       duration,
                       style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
+                        color: LuxuryColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -463,19 +483,22 @@ class UpcomingClassCard extends StatelessWidget {
               ],
             ),
           ),
+
           // Right: Status Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(20),
-              borderRadius: BorderRadius.circular(6),
+              color: LuxuryColors.brandCyan.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.zero,
+              border: Border.all(color: LuxuryColors.brandCyan, width: 1),
             ),
             child: const Text(
-              'AVAILABLE',
+              'OPEN',
               style: TextStyle(
-                color: AppColors.primary,
+                color: LuxuryColors.brandCyan,
                 fontWeight: FontWeight.w900,
-                fontSize: 8,
+                fontSize: 9,
+                letterSpacing: 1,
               ),
             ),
           ),

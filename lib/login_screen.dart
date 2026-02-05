@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
-import 'widgets.dart';
 import 'register_screen.dart';
 import 'admin_navigation_wrapper.dart';
 import 'auth_service.dart';
+import 'ui/widgets/radical/asymmetric_layout.dart';
+import 'ui/widgets/radical/luxury_button.dart';
+import 'ui/animations/luxury_animations.dart';
+
+// ================================================
+// 🎨 LUXURY LOGIN SCREEN - Asymmetric 90/10
+// ================================================
+// Design Commitment: LUXURY + EXTREME ASYMMETRY
+// Layout: 90% massive typography / 10% form (right edge)
+// Geometry: 0px borders, sharp luxury
+// Animation: Staggered reveal + spring physics
+// ================================================
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,16 +24,38 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+
+    _animController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -35,9 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Welcome back!'),
-            backgroundColor: AppColors.primary,
+          SnackBar(
+            content: const Text('Welcome back, Athlete'),
+            backgroundColor: LuxuryColors.gold,
+            behavior: SnackBarBehavior.floating,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         );
         Navigator.pushReplacement(
@@ -50,7 +87,14 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: LuxuryColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -58,7 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('An unexpected error occurred'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: LuxuryColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           ),
         );
       }
@@ -71,238 +117,351 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header with background image
-            Stack(
-              children: [
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.35,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/gym_hero.png'),
-                      fit: BoxFit.cover,
+      backgroundColor: LuxuryColors.pureBlack,
+      body: AsymmetricSplit(
+        primaryOnLeft: false, // Form on right (10%)
+        splitRatio: 0.35, // 35% form, 65% typography (adjusted for mobile)
+        dividerColor: LuxuryColors.gold,
+        dividerWidth: 2,
+
+        // 65% LEFT: Massive Typography Background
+        secondaryChild: Container(
+          color: LuxuryColors.pureBlack,
+          child: Stack(
+            children: [
+              // Massive "IRON PULSE" text as background
+              Positioned(
+                top: size.height * 0.15,
+                left: -20,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    'IRON',
+                    style: TextStyle(
+                      fontSize: size.width * 0.25, // Responsive massive text
+                      fontWeight: FontWeight.w900,
+                      color: LuxuryColors.gold.withValues(alpha: 0.08),
+                      letterSpacing: -8,
+                      height: 0.9,
                     ),
                   ),
+                ),
+              ),
+              Positioned(
+                top: size.height * 0.35,
+                left: -20,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    'PULSE',
+                    style: TextStyle(
+                      fontSize: size.width * 0.25,
+                      fontWeight: FontWeight.w900,
+                      color: LuxuryColors.brandCyan.withValues(alpha: 0.08),
+                      letterSpacing: -8,
+                      height: 0.9,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Decorative gold line
+              Positioned(
+                top: size.height * 0.6,
+                left: 40,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(-1, 0),
+                    end: Offset.zero,
+                  ).animate(_fadeAnimation),
                   child: Container(
+                    width: size.width * 0.3,
+                    height: 3,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.1),
-                          AppColors.background,
+                          LuxuryColors.gold,
+                          LuxuryColors.gold.withValues(alpha: 0),
                         ],
                       ),
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 50,
-                  left: 20,
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.fitness_center,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'IRON PULSE',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 20,
+              ),
+
+              // Tagline
+              Positioned(
+                bottom: 60,
+                left: 40,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Welcome back,',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
                       Text(
-                        'Athlete.',
+                        'PREMIUM',
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w100,
+                          color: LuxuryColors.gold,
+                          letterSpacing: 3,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Access your training schedule.',
-                        style: TextStyle(color: AppColors.textSecondary),
+                      Text(
+                        'FITNESS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w100,
+                          color: LuxuryColors.textSecondary,
+                          letterSpacing: 3,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+        ),
 
-            // Form Section
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  CustomTextField(
-                    label: 'Email Address',
-                    hint: 'athlete@ironpulse.com',
-                    icon: Icons.email_outlined,
-                    controller: _emailController,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    label: 'Password',
-                    hint: '••••••••',
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                    controller: _passwordController,
-                    suffixIcon: IconButton(
-                      icon: const Icon(
-                        Icons.visibility_off_outlined,
-                        color: Colors.white24,
-                        size: 20,
-                      ),
-                      onPressed: () {},
+        // 35% RIGHT: Login Form (Compressed)
+        primaryChild: Container(
+          color: LuxuryColors.background,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: size.height * 0.1),
+
+                // Welcome Text
+                LuxuryAnimations.staggeredReveal(
+                  delay: const Duration(milliseconds: 150),
+                  children: [
+                    Text(
+                      'WELCOME',
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            color: LuxuryColors.textPrimary,
+                            fontSize: 32,
+                          ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
+                    const SizedBox(height: 8),
+                    Text(
+                      'BACK',
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(color: LuxuryColors.gold, fontSize: 32),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Access your training',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: LuxuryColors.textSecondary,
+                        fontWeight: FontWeight.w100,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Email Field
+                    _LuxuryTextField(
+                      label: 'EMAIL',
+                      hint: 'athlete@ironpulse.com',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Password Field
+                    _LuxuryTextField(
+                      label: 'PASSWORD',
+                      hint: '••••••••',
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: LuxuryColors.gold,
+                          size: 20,
                         ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _signIn,
+                    const SizedBox(height: 12),
+
+                    // Forgot Password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: LuxuryTextButton(
+                        text: 'FORGOT PASSWORD?',
+                        onPressed: () {},
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Sign In Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: LuxuryButton(
+                        onPressed: _isLoading ? null : _signIn,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: LuxuryColors.pureBlack,
+                                ),
+                              )
+                            : const Text('SIGN IN'),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Divider
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: LuxuryColors.textPrimary.withValues(
+                              alpha: 0.1,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: LuxuryColors.textTertiary,
+                              fontWeight: FontWeight.w100,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: LuxuryColors.textPrimary.withValues(
+                              alpha: 0.1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Sign Up Link
+                    Center(
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (_isLoading)
-                            const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                          Text(
+                            'New athlete? ',
+                            style: TextStyle(
+                              color: LuxuryColors.textSecondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w100,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegisterScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'SIGN UP',
+                              style: TextStyle(
+                                color: LuxuryColors.gold,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1,
                               ),
-                            )
-                          else
-                            const Text('Sign In'),
-                          const SizedBox(width: 8),
-                          if (!_isLoading)
-                            const Icon(Icons.arrow_forward, size: 18),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  const Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.white10)),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'OR CONTINUE WITH',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.white24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Colors.white10)),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      SocialButton(
-                        label: 'Google',
-                        icon: const Icon(
-                          Icons.g_mobiledata,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        onTap: () {},
-                      ),
-                      const SizedBox(width: 16),
-                      SocialButton(
-                        label: 'Apple',
-                        icon: const Icon(
-                          Icons.apple,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Don't have an account? ",
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign Up",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+// ================================================
+// LUXURY TEXT FIELD - Sharp gold-focused input
+// ================================================
+
+class _LuxuryTextField extends StatelessWidget {
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final TextInputType? keyboardType;
+
+  const _LuxuryTextField({
+    required this.label,
+    required this.hint,
+    required this.controller,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.keyboardType,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w100,
+            color: LuxuryColors.gold,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          style: const TextStyle(
+            color: LuxuryColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: suffixIcon,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 18,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'IRON PULSE',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.luxuryDarkTheme,
       scrollBehavior: AppScrollBehavior(),
       home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
